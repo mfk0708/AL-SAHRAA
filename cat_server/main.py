@@ -11,7 +11,7 @@ from . import config, store as st, logic as L
 from fastapi.middleware.cors import CORSMiddleware
 
 
-
+app = fastapi()
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
