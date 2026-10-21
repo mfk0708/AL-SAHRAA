@@ -7,8 +7,9 @@ RUN if [ -d /wheels/linux-x64 ] && [ "$(uname -m)" = "x86_64" ]; then pip instal
 COPY cat_server ./cat_server
 COPY web ./web
 COPY sample ./sample
+COPY data/cat.db /tmp/cat.db
 COPY cat.env.example README.md ./
-RUN useradd -m cat && mkdir -p /data && chown cat /data
+RUN useradd -m cat && mkdir -p /data && cp /tmp/cat.db /data/cat.db && chown -R cat:cat /data && rm /tmp/cat.db
 USER cat
 ENV CAT_DATA_DIR=/data CAT_HOST=0.0.0.0 CAT_PORT=8000
 EXPOSE 8000
