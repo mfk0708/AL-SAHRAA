@@ -555,15 +555,33 @@ jobs.register(app, current_user, ip_of, company_rows)
 @app.get('/api/diagnostic-login')
 def diagnostic_login():
     email = 'fahad@alsahraa.ae'
+
+    database_path = st.engine.url.database
+    database_file = Path(database_path) if database_path else None
+    database_exists = database_file.exists() if database_file else False
+
     with st.engine.connect() as c:
         a = c.execute(
-            select(st.users_auth.c.user_id, st.users_auth.c.email)
-            .where(func.lower(st.users_auth.c.email) == email)
+            select(
+                st.users_auth.c.user_id,
+                st.users_auth.c.email
+            ).where(
+                func.lower(st.users_auth.c.email) == email
+            )
         ).first()
+
+        user_exists = bool(a and load_user(c, a.user_id))
 
         return {
             'database': st.engine.dialect.name,
+            'database_path': database_path,
+            'database_file_exists': database_exists,
+            'database_size': (
+                database_file.stat().st_size
+                if database_exists
+                else None
+            ),
             'account_exists': a is not None,
             'account_email': a.email if a else None,
-            'account_user_id_exists': bool(a and load_user(c, a.user_id))
+            'account_user_id_exists': user_exists
         }
