@@ -550,3 +550,20 @@ if _vendor.is_dir():
     app.mount('/vendor', StaticFiles(directory=str(_vendor)), name='vendor')
 from . import jobs  # noqa: E402  (schedules, e-mail, backups, monitoring routes)
 jobs.register(app, current_user, ip_of, company_rows)
+
+
+@app.get('/api/diagnostic-login')
+def diagnostic_login():
+    email = 'fahad@alsahraa.ae'
+    with st.engine.connect() as c:
+        a = c.execute(
+            select(st.users_auth.c.user_id, st.users_auth.c.email)
+            .where(func.lower(st.users_auth.c.email) == email)
+        ).first()
+
+        return {
+            'database': st.engine.dialect.name,
+            'account_exists': a is not None,
+            'account_email': a.email if a else None,
+            'account_user_id_exists': bool(a and load_user(c, a.user_id))
+        }
