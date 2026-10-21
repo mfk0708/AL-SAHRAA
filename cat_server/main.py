@@ -8,16 +8,17 @@ from fastapi.responses import HTMLResponse, JSONResponse, FileResponse
 from pydantic import BaseModel
 from sqlalchemy import select, insert, update, delete, func, and_
 from . import config, store as st, logic as L
-from fastapi.middleware.cors import CORSmiddleware
+from fastapi.middleware.cors import CORSMiddleware
+
+
 
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
-    alloe_credentials=False,
-    allow_methods=['*'],
+    allow_credentials=False,
+    allow_methods=["*"],
     allow_headers=["*"],
 )
-
 app = FastAPI(title='Contract Assessment Tools API', version=config.APP_VERSION, docs_url='/api/docs', openapi_url='/api/openapi.json')
 st.init_db()
 COOKIE = 'cat_session'
