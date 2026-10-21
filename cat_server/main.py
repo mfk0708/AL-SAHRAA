@@ -111,7 +111,12 @@ def index():
     html = config.WEB_INDEX.read_text(encoding='utf-8')
     cfg = json.dumps({'api': '/api', 'version': config.APP_VERSION, 'db': st.engine.dialect.name})
     return HTMLResponse(html.replace('<title>', '<script>window.CAT_SERVER=' + cfg + ';</script><title>', 1))
-
+@app.get('/config.js')
+def frontend_config():
+    return FileResponse(
+        config.WEB_INDEX.parent / 'config.js',
+        media_type='application/javascript'
+    )
 
 @app.get('/api/health')
 def health():
