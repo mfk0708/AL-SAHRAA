@@ -1,0 +1,24 @@
+# docker compose up -d   →   http://SERVER:8000   (HOST_PORT=9000 docker compose up -d to use another port)
+# Settings: copy cat.env.example to cat.env and edit (DATABASE_URL below is set for you).
+services:
+  db:
+    image: postgres:16
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: cat
+      POSTGRES_USER: cat
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-change-this-db-password}
+    volumes: [ "pgdata:/var/lib/postgresql/data" ]
+    healthcheck: { test: ["CMD-SHELL", "pg_isready -U cat"], interval: 5s, retries: 20 }
+  app:
+    build: .
+    restart: unless-stopped
+    depends_on: { db: { condition: service_healthy } }
+    env_file: [ cat.env ]
+    environment:
+      DATABASE_URL: postgresql+psycopg://cat:${POSTGRES_PASSWORD:-change-this-db-password}@db:5432/cat
+      CAT_DATA_DIR: /data
+      CAT_PORT: "8000"
+    ports: [ "${HOST_PORT:-8000}:8000" ]
+    volumes: [ "appdata:/data" ]
+volumes: { pgdata: {}, appdata: {} }
