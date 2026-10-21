@@ -11,7 +11,12 @@ from . import config, store as st, logic as L
 from fastapi.middleware.cors import CORSMiddleware
 
 
-app = fastapi()
+
+app = FastAPI(title='Contract Assessment Tools API', version=config.APP_VERSION, docs_url='/api/docs', openapi_url='/api/openapi.json')
+st.init_db()
+COOKIE = 'cat_session'
+now = st.now
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -19,10 +24,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-app = FastAPI(title='Contract Assessment Tools API', version=config.APP_VERSION, docs_url='/api/docs', openapi_url='/api/openapi.json')
-st.init_db()
-COOKIE = 'cat_session'
-now = st.now
 
 
 # ---------------- passwords & sessions ----------------
