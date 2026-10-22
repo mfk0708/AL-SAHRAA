@@ -104,8 +104,7 @@ th.nosort{cursor:default}
 td{padding:7px 10px;border-bottom:1px solid var(--line);vertical-align:top}
 tr:hover td{background:color-mix(in srgb,var(--surface-2) 70%,transparent)}
 tr.sel td{background:var(--accent-soft)}
-td .clip{max-width:46ch;display:-webkit-box;-webkit-line-clamp: 2;
-line-clamp: 2;;-webkit-box-orient:vertical;overflow:hidden}
+td .clip{max-width:46ch;display:-webkit-box;-webkit-box-orient:vertical;overflow:hidden}
 .pill{display:inline-block;font-family:var(--f-display);font-weight:600;font-size:.7rem;letter-spacing:.05em;padding:2px 7px;border-radius:999px;white-space:nowrap;border:1px solid transparent;background:var(--surface-2);color:var(--muted)}
 .s-CRITICAL{background:var(--crit-bg);color:var(--crit)} .s-HIGH{background:var(--high-bg);color:var(--high)} .s-MEDIUM{background:var(--med-bg);color:var(--med)} .s-LOW{background:var(--low-bg);color:var(--low)} .s-COMPLIANT{background:var(--ok-bg);color:var(--ok)}
 .st{border:1px solid var(--line-2);background:transparent}
@@ -2328,9 +2327,11 @@ defReg('users', { coll: 'users', title: 'Users', noun: 'user', fields: [
 ] });
 PAGES.users = () => {
   const list = S.users.filter(u => u.companyId === cid() || (!u.companyId && role().all));
-  return `${head('User and access management', 'Users belong to one company. Switch the “Signed in as” selector to test what each role can do.')}
+  const srv = typeof SRV !== 'undefined' && SRV;
+  return `${head('User and access management', srv ? 'Users belong to one company and sign in with their e-mail address. Add the user, then use Set password to give them a first password – they choose their own at first sign-in.' : 'Users belong to one company. Switch the “Signed in as” selector to test what each role can do.')}
+  ${srv && !cid() ? '<div class="note warn">Register a company first (Company management), then add its users here.</div>' : ''}
   <div class="panel"><div class="ph"><h3>Users in ${esc((company() || {}).name || '')}</h3>${can('users') ? '<button class="btn pri" data-act="regAdd" data-reg="users">Add user</button>' : ''}</div><div class="pb flush"><div class="tablewrap"><table><thead><tr><th class="nosort">Name</th><th class="nosort">Email</th><th class="nosort">Role</th><th class="nosort">Scope</th><th class="nosort">Status</th><th class="nosort"></th></tr></thead><tbody>
-  ${list.map(u => `<tr><td>${esc(u.name)}</td><td>${esc(u.email || '')}</td><td>${esc(u.role)}</td><td>${u.companyId ? 'This company' : 'All companies'}</td><td>${esc(u.active || 'Active')}</td><td>${can('users') && u.companyId ? `<button class="btn sm" data-act="regEdit" data-reg="users" data-id="${u.id}">Edit</button>` : ''}</td></tr>`).join('')}</tbody></table></div></div></div>
+  ${list.map(u => `<tr><td>${esc(u.name)}</td><td>${esc(u.email || '')}</td><td>${esc(u.role)}</td><td>${u.companyId ? 'This company' : 'All companies'}</td><td>${esc(u.active || 'Active')}</td><td style="white-space:nowrap">${can('users') && u.companyId ? `<button class="btn sm" data-act="regEdit" data-reg="users" data-id="${u.id}">Edit</button> ` : ''}${srv && can('users') && u.id !== (me() || {}).id && (u.role !== 'Super Administrator' || role().all) ? `<button class="btn sm" data-act="setPw" data-id="${u.id}" ${u.email ? '' : 'disabled title="Add an e-mail address first"'}>Set password</button>` : ''}</td></tr>`).join('')}</tbody></table></div></div></div>
   <div class="panel"><div class="ph"><h3>Role permissions</h3></div><div class="pb flush"><div class="tablewrap"><table><thead><tr><th class="nosort">Role</th><th class="nosort">Create / edit</th><th class="nosort">Approve stages</th><th class="nosort">Administer</th><th class="nosort">Notes</th></tr></thead><tbody>
   ${Object.entries(ROLES).map(([k, r]) => `<tr><td>${esc(k)}</td><td>${r.edit ? (r.only ? 'Only: ' + r.only.join(', ') : 'All modules') : 'No'}</td><td>${k === 'Super Administrator' || k === 'Company Administrator' ? 'All' : Object.entries(STAGE_ROLES).filter(([, v]) => v.includes(k)).map(([s]) => s).join(', ') || '—'}</td><td>${r.admin ? 'Yes' : 'No'}</td><td>${r.all ? 'All companies' : r.persp ? 'Locked to Subcontractor perspective' : ''}</td></tr>`).join('')}</tbody></table></div></div></div>
   <div class="panel"><div class="ph"><h3>Audit trail</h3><button class="btn" data-act="auditXlsx">Export XLSX</button></div><div class="pb flush"><div class="tablewrap" style="max-height:420px"><table><thead><tr><th class="nosort">When</th><th class="nosort">User</th><th class="nosort">Role</th><th class="nosort">Action</th><th class="nosort">Record</th><th class="nosort">Detail</th></tr></thead><tbody>
